@@ -1,0 +1,41 @@
+{
+  "private": true,
+  "scripts": {
+    "dev": "next dev --turbo",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "seed": "npx tsx db/seed.ts"
+  },
+  "dependencies": {
+    "@auth0/nextjs-auth0": "^4.7.0",
+    "@dagrejs/dagre": "^1.1.5",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^7.2.0",
+    "@types/node": "^20.19.2",
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "@xyflow/react": "^12.8.1",
+    "bcrypt-ts": "^5.0.3",
+    "dotenv": "^17.0.1",
+    "drizzle-orm": "^0.44.2",
+    "drizzle-seed": "^0.3.1",
+    "geist": "^1.4.2",
+    "next": "^15.3.4",
+    "postgres": "^3.4.7",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "tsx": "^4.20.3",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "drizzle-kit": "^0.31.4",
+    "eslint": "^9.30.0",
+    "eslint-config-next": "^15.3.4",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.8.3"
+  }
+}

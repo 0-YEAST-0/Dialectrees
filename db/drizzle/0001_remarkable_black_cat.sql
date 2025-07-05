@@ -1,0 +1,1 @@
+ALTER TABLE "Nodes" ALTER COLUMN "author" DROP NOT NULL;
