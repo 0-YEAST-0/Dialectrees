@@ -43,7 +43,8 @@ export async function GET(request: Request) {
             position: { x: 0, y: 0 },
             data: { label: node.title, uuid: node.editUUID },
             sourcePosition: "right" as Position.Right,
-            targetPosition: "left" as Position.Left
+            targetPosition: "left" as Position.Left,
+            style: { backgroundColor: '#706666', color: 'white', borderColor: "black" }
         };
     });
   }

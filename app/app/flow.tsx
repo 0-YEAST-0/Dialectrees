@@ -102,7 +102,7 @@ const LayoutFlow = ({ nodes, edges, selected, onNodesChange, onEdgesChange, hand
 
   return (
     <ReactFlow
-      style={{ background: 'white' }}
+      style={{ background: '#fafafa' }}
       nodes={layoutedNodes}
       edges={layoutedEdges}
       onNodesChange={handleNodesChange}
