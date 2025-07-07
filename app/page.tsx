@@ -40,6 +40,27 @@ export async function AuthButtons() {
   );
 }
 
+export async function GetStartedButton() {
+  const user = (await auth0.getSession())?.user; 
+    if (user) {
+      return (
+        <Link href={"/app"}>
+          <button className="px-8 py-4 bg-red-600 text-white text-lg font-semibold rounded-lg hover:bg-red-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105">
+            Go to App
+          </button>
+        </Link>
+      )
+    }
+    else{
+      return (
+        <Link href={"/auth/login?screen_hint=signup&returnTo=/app"}>
+          <button className="px-8 py-4 bg-red-600 text-white text-lg font-semibold rounded-lg hover:bg-red-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105">
+            Get Started
+          </button>
+        </Link>
+      )
+    }
+}
 export default function Page() {
   return (
     <div className="min-h-screen bg-gradient-to-tl from-red-100 to-white">
@@ -70,11 +91,7 @@ export default function Page() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20">
-            <Link href={"/auth/login?screen_hint=signup&returnTo=/app"}>
-              <button className="px-8 py-4 bg-red-600 text-white text-lg font-semibold rounded-lg hover:bg-red-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105">
-                Get Started
-              </button>
-            </Link>
+            <GetStartedButton />
             <button className="px-8 py-4 border-2 border-red-600 text-red-600 text-lg font-semibold rounded-lg hover:bg-red-600 hover:text-white transition-all duration-300">
               Learn More
             </button>

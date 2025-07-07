@@ -5,7 +5,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "npx tsx db/seed.ts"
+    "seed": "npx tsx db/seed.ts",
+    "test-seed": "npx tsx db/test-seed.ts"
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "^4.7.0",

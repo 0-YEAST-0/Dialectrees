@@ -12,6 +12,7 @@ import {
   AnyPgColumn,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
+import { v4 as uuid } from 'uuid';
 
 // Enum for node type
 export const nodeTypeEnum = pgEnum('node_type', ['post', 'header', 'group']);
@@ -33,7 +34,23 @@ export const nodes = pgTable('Nodes', {
   pinned: boolean('pinned').default(false),
   created: timestamp('created').defaultNow(),
   lastEdited: timestamp('last_edited').defaultNow(),
+  editUUID: varchar('editUUID', { length: 36 }).notNull(),
 });
+
+export const nodeRelations = relations(nodes, ({ one, many }) => ({
+  // A node may have one parent
+  parentNode: one(nodes, {
+    fields: [nodes.parent],
+    references: [nodes.id],
+    relationName: 'parentChild',
+  }),
+
+  // A node may have many children
+  children: many(nodes, {
+    relationName: 'parentChild',
+    
+  })
+}));
 
 export const likes = pgTable('Likes', {
     userId: varchar('user_id', {length: 64})

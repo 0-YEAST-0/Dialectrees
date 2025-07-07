@@ -1,0 +1,1 @@
+ALTER TABLE "Nodes" ADD COLUMN "editUUID" varchar(36) NOT NULL;

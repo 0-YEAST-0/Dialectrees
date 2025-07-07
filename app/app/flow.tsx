@@ -1,10 +1,9 @@
 'use client';
 import Dagre from '@dagrejs/dagre';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import {
   ReactFlow,
   ReactFlowProvider,
-  Panel,
   useNodesState,
   useEdgesState,
   useReactFlow,
@@ -12,11 +11,15 @@ import {
   Edge,
   Background,
   BackgroundVariant,
+  NodeChange,
+  EdgeChange,
+  NodeSelectionChange,
 } from '@xyflow/react';
 
 import '@xyflow/react/dist/style.css';
 
 const NODE_SIZE = {w: 200, h: 70}
+
 const getLayoutedElements = (nodes: Node[], edges: Edge[], direction: string) => {
   const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
   g.setGraph({ rankdir: direction });
@@ -43,41 +46,69 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction: string) =>
   };
 };
 
-const LayoutFlow = () => {
+interface LayoutFlowProps {
+  nodes: Node[];
+  edges: Edge[];
+  selected: string;
+  onNodesChange: (changes: NodeChange<Node>[]) => void;
+  onEdgesChange: (changes: EdgeChange<Edge>[]) => void;
+  handleNodeSelect: (selected: string) => void;
+}
+
+const LayoutFlow = ({ nodes, edges, selected, onNodesChange, onEdgesChange, handleNodeSelect }: LayoutFlowProps) => {
   const { fitView } = useReactFlow();
-  const [nodes, setNodes, onNodesChange] = useNodesState([] as Node[]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([] as Edge[]);
-  const treeUUIDRef = useRef<string | null>("none");
+  const [layoutedNodes, setLayoutedNodes, onLayoutedNodesChange] = useNodesState(nodes);
+  const [layoutedEdges, setLayoutedEdges, onLayoutedEdgesChange] = useEdgesState(edges);
 
-  const layoutAndSet = useCallback((nodes: Node[], edges: Edge[]) => {
-    const layouted = getLayoutedElements(nodes, edges, 'LR');
-    setNodes(layouted.nodes);
-    setEdges(layouted.edges);
-  }, [setNodes, setEdges, fitView]);
-
-  const fetchAndLayout = useCallback(async () => {
-    const res = await fetch(`/api/nodes?uuid=${treeUUIDRef.current ?? ''}`);
-    const data = await res.json();
-
-    if (data.UUID !== treeUUIDRef.current) {
-      treeUUIDRef.current = data.UUID;
-      layoutAndSet(data.nodes, data.edges);
-    }
-  }, [layoutAndSet]);
-
+  // Layout nodes whenever props change
   useEffect(() => {
-    fetchAndLayout();
-    const interval = setInterval(fetchAndLayout, 3000);
-    return () => clearInterval(interval);
-  }, [fetchAndLayout]);
+    const layouted = getLayoutedElements(nodes, edges, 'LR');
+    setLayoutedNodes(layouted.nodes);
+    setLayoutedEdges(layouted.edges);
+  }, [nodes, edges, setLayoutedNodes, setLayoutedEdges]);
+
+  // Forward changes to parent
+  const handleNodesChange = useCallback((changes: NodeChange<Node>[]) => {
+    
+    let newSelected = "";
+    let ignore = false;
+    changes.forEach((change) => {
+        switch (change.type) {
+            case "select": 
+                console.log("selection event");
+                const selectChange = change as NodeSelectionChange;
+                if (selectChange.selected){
+                    newSelected = selectChange.id;
+                }
+                break;
+            default:
+                ignore = true;
+        }
+    });
+    if (!ignore) {
+        if (newSelected != selected)
+            handleNodeSelect(newSelected);
+        onLayoutedNodesChange(changes);
+    }
+    //onLayoutedNodesChange(changes);
+    //if (!ignore) onNodesChange(changes);
+  }, [selected, handleNodeSelect, onLayoutedNodesChange, onNodesChange]);
+
+  const handleEdgesChange = useCallback((changes: EdgeChange<Edge>[]) => {
+    changes = [];
+    onLayoutedEdgesChange(changes);
+    onEdgesChange(changes);
+  }, [onLayoutedEdgesChange, onEdgesChange]);
 
   return (
     <ReactFlow
       style={{ background: 'white' }}
-      nodes={nodes}
-      edges={edges}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
+      nodes={layoutedNodes}
+      edges={layoutedEdges}
+      onNodesChange={handleNodesChange}
+      onEdgesChange={handleEdgesChange}
+      selectionKeyCode={null}
+      multiSelectionKeyCode={null}
       className="w-full h-full"
       fitView
     >
@@ -86,12 +117,26 @@ const LayoutFlow = () => {
   );
 };
 
-export const FlowCanvas = () => {
+interface FlowCanvasProps {
+  nodes: Node[];
+  edges: Edge[];
+  selected: string;
+  onNodesChange: (changes: NodeChange<Node>[]) => void;
+  onEdgesChange: (changes: EdgeChange<Edge>[]) => void;
+  handleNodeSelect: (selected: string) => void;
+}
+
+export const FlowCanvas = ({ nodes, edges, selected, onNodesChange, onEdgesChange, handleNodeSelect }: FlowCanvasProps) => {
   return (
     <ReactFlowProvider>
-      <LayoutFlow />
+      <LayoutFlow 
+        nodes={nodes} 
+        edges={edges}
+        selected={selected}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        handleNodeSelect={handleNodeSelect}
+      />
     </ReactFlowProvider>
   );
 };
-
-export default FlowCanvas;

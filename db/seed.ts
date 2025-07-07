@@ -31,6 +31,7 @@ async function seed() {
       pinned: true,
       content: null,
       parent: null,
+      editUUID: uuid(),
     });
 
     db.update(globals).set({treeUUID: uuid()}).where(eq(globals.id, 1));
