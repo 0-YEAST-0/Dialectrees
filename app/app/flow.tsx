@@ -67,32 +67,39 @@ const LayoutFlow = ({ nodes, edges, selected, onNodesChange, onEdgesChange, hand
     setLayoutedEdges(layouted.edges);
   }, [nodes, edges, setLayoutedNodes, setLayoutedEdges]);
 
+  // Update node selection when external selected state changes
+  useEffect(() => {
+    setLayoutedNodes((currentNodes) =>
+      currentNodes.map((node) => ({
+        ...node,
+        selected: node.id === selected
+      }))
+    );
+  }, [selected, setLayoutedNodes, nodes]);
+
   // Forward changes to parent
   const handleNodesChange = useCallback((changes: NodeChange<Node>[]) => {
-    
     let newSelected = "";
-    let ignore = false;
+    let hasSelectionChange = false;
+    
     changes.forEach((change) => {
-        switch (change.type) {
-            case "select": 
-                console.log("selection event");
-                const selectChange = change as NodeSelectionChange;
-                if (selectChange.selected){
-                    newSelected = selectChange.id;
-                }
-                break;
-            default:
-                ignore = true;
+      if (change.type === "select") {
+        hasSelectionChange = true;
+        const selectChange = change as NodeSelectionChange;
+        if (selectChange.selected) {
+          newSelected = selectChange.id;
         }
+      }
     });
-    if (!ignore) {
-        if (newSelected != selected)
-            handleNodeSelect(newSelected);
-        onLayoutedNodesChange(changes);
+
+    // Only update parent selection if there was a selection change and it's different
+    if (hasSelectionChange && newSelected !== selected) {
+      handleNodeSelect(newSelected);
     }
-    //onLayoutedNodesChange(changes);
-    //if (!ignore) onNodesChange(changes);
-  }, [selected, handleNodeSelect, onLayoutedNodesChange, onNodesChange]);
+
+    // Always apply the changes to the internal state
+    onLayoutedNodesChange(changes);
+  }, [selected, handleNodeSelect, onLayoutedNodesChange]);
 
   const handleEdgesChange = useCallback((changes: EdgeChange<Edge>[]) => {
     changes = [];
@@ -102,7 +109,7 @@ const LayoutFlow = ({ nodes, edges, selected, onNodesChange, onEdgesChange, hand
 
   return (
     <ReactFlow
-      style={{ background: '#fafafa' }}
+      style={{ background: '#f8f6f2' }}
       nodes={layoutedNodes}
       edges={layoutedEdges}
       onNodesChange={handleNodesChange}
@@ -110,6 +117,7 @@ const LayoutFlow = ({ nodes, edges, selected, onNodesChange, onEdgesChange, hand
       selectionKeyCode={null}
       multiSelectionKeyCode={null}
       className="w-full h-full"
+      nodesDraggable={false}
       fitView
     >
       <Background color="#aaa" size={1.5} variant={BackgroundVariant.Dots} />

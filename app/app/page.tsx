@@ -1,23 +1,15 @@
 'use server'
 import SignOut from '@/components/SignOut';
-import auth0 from '../auth0';
 import { redirect } from "next/navigation";
-import { getUser } from '@/db/user';
 import React from 'react';
  
 import '@xyflow/react/dist/style.css';
 import MainWrapper from './mainWrapper';
+import { getAuthenticatedUser } from '../permissions';
 
 export default async function Main() {
-  const user = (await auth0.getSession())?.user; 
-  if(!user) return (<div>expected user</div>)
+  const user = (await getAuthenticatedUser())!;
   
-  const dbUser = await getUser(user!.sub);
-  console.log(dbUser);
-  if (!dbUser) {
-    redirect("/app/user-setup");
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-tl from-red-100 to-white flex flex-col">
       {/* Navigation */}
@@ -29,13 +21,13 @@ export default async function Main() {
           </a>
           <div className="flex items-center space-x-4">
             <span className="text-gray-700">
-              {dbUser.username}
+              {user.username}
             </span>
             <SignOut />
           </div>
         </div>
       </nav>
-      <MainWrapper />
+      <MainWrapper user={user}/>
     </div>
   );
 }

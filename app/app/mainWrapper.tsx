@@ -5,8 +5,13 @@ import { FlowCanvas } from './flow';
 import { DetailsPanel } from './detailsPanel';
 import { NodeDataPayload } from '../api/nodes/route';
 import { NodeWithChildren } from '@/db/nodes';
+import { User } from '@/db/user';
 
-const MainWrapper = () => {
+interface MainWrapperProps {
+    user: User;
+}
+
+const MainWrapper = ({ user }: MainWrapperProps) => {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [nodeData, setNodeData] = useState<NodeWithChildren | {}>({});
@@ -168,7 +173,7 @@ const MainWrapper = () => {
 
         {/* Right-side panel (30%) */}
         <div className="w-[30%] p-4 bg-white shadow-lg overflow-auto z-20" style={{ boxShadow: '-5px 0 10px -1px rgba(0, 0, 0, 0.07)' }}>
-          <DetailsPanel nodeData={nodeData}/>
+          <DetailsPanel nodeData={nodeData} handleNodeSelect={handleNodeSelect} user={user} refreshTree={fetchData}/>
         </div>
       </div>
   );

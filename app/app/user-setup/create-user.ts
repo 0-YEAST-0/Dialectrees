@@ -11,7 +11,6 @@ export async function createUser(formData: FormData) {
   const user = session?.user;
 
   if (!user) {
-    console.log("setup redirect to login");
     redirect('/auth/login?returnTo=/app');
   }
 

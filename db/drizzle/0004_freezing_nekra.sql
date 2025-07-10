@@ -1,0 +1,1 @@
+ALTER TABLE "Members" ALTER COLUMN "admin_rank" SET NOT NULL;

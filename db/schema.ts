@@ -12,7 +12,7 @@ import {
   AnyPgColumn,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
-import { v4 as uuid } from 'uuid';
+
 
 // Enum for node type
 export const nodeTypeEnum = pgEnum('node_type', ['post', 'header', 'group']);
@@ -72,9 +72,17 @@ export const members = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' })
       .primaryKey(),
-    adminRank: integer('admin_rank').default(0),
+    adminRank: integer('admin_rank').notNull().default(0),
   }
 );
+
+export const usersRelations = relations(users, ({ one }) => ({
+	membership: one(members),
+}))
+
+export const membersRelations = relations(members, ({ one }) => ({
+	user: one(users, { fields: [members.userId], references: [users.id] }),
+}));
 
 export const globals = pgTable('Globals', {
   id: integer('id').primaryKey(),

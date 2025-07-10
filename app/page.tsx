@@ -1,16 +1,19 @@
 import Link from 'next/link';
 import SignOut from '@/components/SignOut';
 import auth0 from "./auth0";
-import { getUser } from '@/db/user';
+import { getUser, User } from '@/db/user';
+import { getAuthenticatedUser } from './permissions';
 
-export async function AuthButtons() {
-  const user = (await auth0.getSession())?.user; 
+interface NeedsUserProps {
+  user: User | null;
+}
+
+export async function AuthButtons({ user }: NeedsUserProps) {
   if (user) {
-    const dbUser = await getUser(user!.sub);
     return (
       <div className="flex items-center space-x-4">
         <span className="text-gray-700">
-          {dbUser.username}
+          {user.username}
         </span>
         <SignOut />
         <Link href="/app">
@@ -40,8 +43,7 @@ export async function AuthButtons() {
   );
 }
 
-export async function GetStartedButton() {
-  const user = (await auth0.getSession())?.user; 
+export async function GetStartedButton({ user }: NeedsUserProps) {
     if (user) {
       return (
         <Link href={"/app"}>
@@ -61,7 +63,9 @@ export async function GetStartedButton() {
       )
     }
 }
-export default function Page() {
+export default async function Page() {
+  const user = await getAuthenticatedUser(); 
+
   return (
     <div className="min-h-screen bg-gradient-to-tl from-red-100 to-white">
       {/* Navigation */}
@@ -71,7 +75,7 @@ export default function Page() {
             <span className="text-black">Dialec</span>
             <span className="text-red-600">trees</span>
           </div>
-          <AuthButtons/>
+          <AuthButtons user={user}/>
         </div>
       </nav>
 
@@ -91,7 +95,7 @@ export default function Page() {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20">
-            <GetStartedButton />
+            <GetStartedButton user={user}/>
             <button className="px-8 py-4 border-2 border-red-600 text-red-600 text-lg font-semibold rounded-lg hover:bg-red-600 hover:text-white transition-all duration-300">
               Learn More
             </button>
