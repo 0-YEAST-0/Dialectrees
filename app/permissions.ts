@@ -4,7 +4,15 @@ import { redirect } from "next/navigation";
 
 
 export enum Permissions{
-  SET_PINNED = 1,
+    RESPOND = 0,
+
+    VOTE = 1,
+    
+    SET_PINNED = 2,
+    DELETE_RESPONSE = 2,
+    PROMOTE_MEMBER = 2,
+
+    PROMOTE_ADMIN = 3
 }
 
 export async function getAuthenticatedUser(){

@@ -1,7 +1,7 @@
 // scripts/seed.ts
 import "dotenv/config";
 import { db } from "./db"; // your drizzle db instance
-import { globals, nodes, nodeTypeEnum } from "@/db/schema"; // your schema
+import { globals, NODE_STANCE, nodes, nodeTypeEnum } from "@/db/schema"; // your schema
 import { eq, isNull } from "drizzle-orm";
 import { v4 as uuid } from 'uuid';
 
@@ -20,6 +20,7 @@ async function seed() {
 
   
   const existingRoot = (await db.select().from(nodes).where(isNull(nodes.parent)))[0];
+  const randomStance = NODE_STANCE[Math.floor(Math.random() * NODE_STANCE.length)];
 
   if (!existingRoot) {
     await db.insert(nodes).values({
@@ -29,6 +30,7 @@ async function seed() {
       created: new Date(),
       lastEdited: new Date(),
       pinned: true,
+      stance: randomStance,
       content: null,
       parent: null,
       editUUID: uuid(),

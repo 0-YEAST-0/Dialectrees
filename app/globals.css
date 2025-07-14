@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    --color-stance-community: #ffb4b4;
+    --color-stance-community-hover: #ffc4c4;
+
+    --color-stance-neutral: #dfdfdf;
+    --color-stance-neutral-hover: #efefef;
+
+    --color-stance-opposing: #b4b4ff;
+    --color-stance-opposing-hover: #c4c4ff;
+}
 .react-flow__node.selected {
     box-shadow: 0 0 4 1px rgba(220 38 38) !important;
 }

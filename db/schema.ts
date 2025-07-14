@@ -14,8 +14,22 @@ import {
 import { relations } from 'drizzle-orm';
 
 
-// Enum for node type
-export const nodeTypeEnum = pgEnum('node_type', ['post', 'header', 'group']);
+// Define the values as const
+export const NODE_TYPES = ['post', 'header', 'group'] as const;
+
+
+
+// Create a type from the const
+export type NodeType = typeof NODE_TYPES[number];
+
+// Your Drizzle enum
+export const nodeTypeEnum = pgEnum('node_type', NODE_TYPES);
+
+export const NODE_STANCE = ['community', 'neutral', 'opposing'] as const;
+
+export type NodeStance = typeof NODE_STANCE[number];
+
+export const nodeStanceEnum = pgEnum('node_stance', NODE_STANCE);
 
 export const users = pgTable('Users', {
   id: varchar('id', {length: 64}).primaryKey(),
@@ -32,6 +46,7 @@ export const nodes = pgTable('Nodes', {
   parent: integer('parent').references((): AnyPgColumn => nodes.id, { onDelete: 'cascade' }),
   content: text('content'),
   pinned: boolean('pinned').default(false),
+  stance: nodeStanceEnum('stance').notNull().default('neutral'),
   created: timestamp('created').defaultNow(),
   lastEdited: timestamp('last_edited').defaultNow(),
   editUUID: varchar('editUUID', { length: 36 }).notNull(),
@@ -49,7 +64,12 @@ export const nodeRelations = relations(nodes, ({ one, many }) => ({
   children: many(nodes, {
     relationName: 'parentChild',
     
-  })
+  }),
+
+  author: one(users, {
+    fields: [nodes.author],
+    references: [users.id],
+  }),
 }));
 
 export const likes = pgTable('Likes', {

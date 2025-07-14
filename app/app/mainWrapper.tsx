@@ -158,24 +158,24 @@ const MainWrapper = ({ user }: MainWrapperProps) => {
   }, [updateLastInteraction]);
 
   return (
-      <div className="flex flex-1 bg-white z-10">
-        {/* React Flow area (70%) */}
-        <div className="w-[70%] relative">
-          <FlowCanvas 
-            nodes={nodes}
-            edges={edges}
-            selected={selectedNodeId}
-            onNodesChange={handleNodesChange}
-            onEdgesChange={handleEdgesChange}
-            handleNodeSelect={handleNodeSelect}
-          />
-        </div>
-
-        {/* Right-side panel (30%) */}
-        <div className="w-[30%] p-4 bg-white shadow-lg overflow-auto z-20" style={{ boxShadow: '-5px 0 10px -1px rgba(0, 0, 0, 0.07)' }}>
-          <DetailsPanel nodeData={nodeData} handleNodeSelect={handleNodeSelect} user={user} refreshTree={fetchData}/>
-        </div>
+    <div className="flex flex-1 bg-white z-10">
+      {/* React Flow area (fills remaining space) */}
+      <div className="flex-1 relative">
+        <FlowCanvas 
+          nodes={nodes}
+          edges={edges}
+          selected={selectedNodeId}
+          onNodesChange={handleNodesChange}
+          onEdgesChange={handleEdgesChange}
+          handleNodeSelect={handleNodeSelect}
+        />
       </div>
+    
+      {/* Right-side panel (fixed width) */}
+      <div className="w-[50rem] p-4 bg-white shadow-lg overflow-auto z-20" style={{ boxShadow: '-5px 0 10px -1px rgba(0, 0, 0, 0.07)' }}>
+        <DetailsPanel nodeData={nodeData} handleNodeSelect={handleNodeSelect} user={user} refreshTree={fetchData}/>
+      </div>
+    </div>
   );
 };
 

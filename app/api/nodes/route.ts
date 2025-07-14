@@ -62,13 +62,17 @@ export async function GET(request: Request) {
                 target: `${node.id}`,
             });
         }
+        const background = 
+          node.stance == 'community' ? 'var(--color-stance-community)' : (
+          node.stance == 'opposing' ? 'var(--color-stance-opposing)' :
+          'var(--color-stance-neutral)');
         return {
             id: `${node.id}`,
             position: { x: 0, y: 0 },
             data: { label: node.title, uuid: node.editUUID },
             sourcePosition: "right" as Position.Right,
             targetPosition: "left" as Position.Left,
-            style: { backgroundColor: '#706666', color: 'white', borderColor: "black" }
+            style: { backgroundColor: background, color: 'black', borderColor: "black" }
         };
     });
 }
