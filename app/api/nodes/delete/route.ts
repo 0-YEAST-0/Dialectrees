@@ -1,9 +1,8 @@
-import { getUserRequirePermissions, Permissions } from "@/app/permissions";
+import { getUserRequirePermissions } from "@/app/permissions";
 import { updateTreeUUID } from "@/db/globals";
-import { createNode, deleteNode, getNodeWithChildren, isValidNodeType } from "@/db/nodes";
-import { NodeType } from "@/db/schema";
+import { deleteNode, getNodeWithChildren } from "@/db/nodes";
 import { NextRequest, NextResponse } from "next/server";
-
+import { Permissions } from "@/app/client-permissions";
 export async function POST(request: NextRequest) {
     try {
         const user = await getUserRequirePermissions(Permissions.DELETE_RESPONSE);
@@ -33,7 +32,7 @@ export async function POST(request: NextRequest) {
                 { status: 400 }
             );
         }
-        const node = await getNodeWithChildren(nodeId, "_");
+        const node = await getNodeWithChildren(nodeId, "_", user);
         if (node.parent == null) {
             return NextResponse.json(
                 { 

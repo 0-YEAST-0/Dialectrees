@@ -3,6 +3,8 @@ import { getNodeWithChildren, getPinnedNodes, NodeWithChildren } from '@/db/node
 import { getTreeUUID } from '@/db/globals';
 import { Edge, Node, Position } from '@xyflow/react';
 import { Node as NodeDB } from "@/db/nodes"
+import { getAuthenticatedUser } from '@/app/permissions';
+import DialectreesConfig from '@/app/config';
 
 export type NodeDataPayload = {
   UUID: string;
@@ -19,6 +21,11 @@ export async function GET(request: Request) {
   const clientSelectedUUID = searchParams.get('selectedUUID');
   const selectedID = searchParams.get('selectedID');
 
+  const user = await getAuthenticatedUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Authentication required' }, { status: 400 });
+  }
+
   if (!clientUUID) {
     return NextResponse.json({ error: 'Missing UUID' }, { status: 400 });
   }
@@ -29,7 +36,7 @@ export async function GET(request: Request) {
   const serverUUID = await getTreeUUID();
 
   if (clientUUID !== serverUUID) {
-    const dbNodes = await getPinnedNodes();
+    const dbNodes = await getPinnedNodes(user);
     
     // Create a Set of all pinned node IDs for quick lookup
     const pinnedNodeIds = new Set(dbNodes.map(node => node.id));
@@ -62,10 +69,23 @@ export async function GET(request: Request) {
                 target: `${node.id}`,
             });
         }
+        
+        const votes = node.cachedVotes || {
+          community: 0,
+          opposing: 0,
+          likes: 0,
+          dislikes: 0
+        };
+
+        const stanceDiff = votes.community - votes.opposing;
+        const stanceSum = votes.community + votes.opposing;
+
+        const stanceScore = stanceDiff / (stanceSum+1)
+
         const background = 
-          node.stance == 'community' ? 'var(--color-stance-community)' : (
-          node.stance == 'opposing' ? 'var(--color-stance-opposing)' :
-          'var(--color-stance-neutral)');
+        Math.abs(stanceScore) < DialectreesConfig.neutralStanceThreshold ? 'var(--color-stance-neutral)' 
+        : (stanceScore > 0 ? 'var(--color-stance-community)' : 'var(--color-stance-opposing)');
+          
         return {
             id: `${node.id}`,
             position: { x: 0, y: 0 },
@@ -79,7 +99,7 @@ export async function GET(request: Request) {
   let nodeData: NodeWithChildren | {} = {}
   let nodeDataUUID: string = "";
   if (selectedID && clientSelectedUUID !== null){
-    const res = await getNodeWithChildren(parseInt(selectedID), clientSelectedUUID);
+    const res = await getNodeWithChildren(parseInt(selectedID), clientSelectedUUID, user);
     nodeData = res ?? {};
     nodeDataUUID = res ? (nodeData as NodeWithChildren).editUUID : clientSelectedUUID; 
   }

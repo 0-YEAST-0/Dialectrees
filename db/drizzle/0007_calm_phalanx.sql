@@ -1,0 +1,1 @@
+ALTER TABLE "Nodes" DROP COLUMN "stance";

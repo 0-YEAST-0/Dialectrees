@@ -1,8 +1,12 @@
-import { getUserRequirePermissions, Permissions } from "@/app/permissions";
+import { getUserRequirePermissions } from "@/app/permissions";
 import { updateTreeUUID } from "@/db/globals";
-import { createNode, isValidNodeStance, isValidNodeType } from "@/db/nodes";
+import { CreatedNode, createNode, isValidNodeStance, isValidNodeType, Node } from "@/db/nodes";
 import { NodeStance, NodeType } from "@/db/schema";
 import { NextRequest, NextResponse } from "next/server";
+import { Permissions } from "@/app/client-permissions";
+import { initVoteCache, insertVote, updateVoteCache } from "@/db/votes";
+import { db } from "@/db/db";
+import DialectreesConfig from "@/app/config";
 
 export async function POST(request: NextRequest) {
     try {
@@ -72,11 +76,20 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Create the node
-        const newNode = await createNode(user.id, title.trim(), type as NodeType, stance as NodeStance, parent, content);
+        const newNode = await createNode(user.id, title.trim(), type as NodeType, parent, content);
 
-        // Update tree UUID to reflect changes
-        await updateTreeUUID();
+        await db.transaction(async (tx) => {
+            // Create the node
+            if (stance != "neutral"){
+                await insertVote(user.id, newNode.id, true, stance == "community", tx);
+                await initVoteCache(newNode.id, tx)
+                await updateVoteCache(newNode.id, true, 0, stance == "community" ? 1 : -1, DialectreesConfig.authorStanceMultiplier, tx);
+            }
+            
+            // Update tree UUID to reflect changes
+            await updateTreeUUID();
+
+        });
 
         return NextResponse.json(
             { 
@@ -85,6 +98,7 @@ export async function POST(request: NextRequest) {
             },
             { status: 201 }
         );
+        
 
     } catch (error) {
         console.error('Error creating node:', error);

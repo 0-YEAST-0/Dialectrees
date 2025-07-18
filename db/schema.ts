@@ -10,6 +10,7 @@ import {
   primaryKey,
   index,
   AnyPgColumn,
+  unique,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -46,11 +47,12 @@ export const nodes = pgTable('Nodes', {
   parent: integer('parent').references((): AnyPgColumn => nodes.id, { onDelete: 'cascade' }),
   content: text('content'),
   pinned: boolean('pinned').default(false),
-  stance: nodeStanceEnum('stance').notNull().default('neutral'),
   created: timestamp('created').defaultNow(),
   lastEdited: timestamp('last_edited').defaultNow(),
   editUUID: varchar('editUUID', { length: 36 }).notNull(),
 });
+
+
 
 export const nodeRelations = relations(nodes, ({ one, many }) => ({
   // A node may have one parent
@@ -70,29 +72,58 @@ export const nodeRelations = relations(nodes, ({ one, many }) => ({
     fields: [nodes.author],
     references: [users.id],
   }),
+
+  cachedVotes: one(voteCache),
+  votes: many(votes),
 }));
 
-export const likes = pgTable('Likes', {
+export const voteCache = pgTable('VoteCache', {
+    nodeId: integer('node_id')
+      .notNull()
+      .references(() => nodes.id, { onDelete: 'cascade' })
+      .primaryKey(),
+    likes: integer('likes').notNull().default(0),
+    dislikes: integer('dislikes').notNull().default(0),
+    community: integer('community').notNull().default(0),
+    opposing: integer('opposing').notNull().default(0),
+  }
+);
+
+export const voteCacheRelations = relations(voteCache, ({ one }) => ({
+	node: one(nodes, { fields: [voteCache.nodeId], references: [nodes.id] }),
+}));
+
+export const votes = pgTable('Votes', {
     userId: varchar('user_id', {length: 64})
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     nodeId: integer('node_id')
       .notNull()
-      .references(() => nodes.id, { onDelete: 'cascade' })
+      .references(() => nodes.id, { onDelete: 'cascade' }),
+    isStance: boolean('is_stance')
+      .notNull(),
+    isPositive: boolean('is_positive')
+      .notNull()
   },
-  (likes) => ([
-    primaryKey({columns: [likes.userId, likes.nodeId]})
+  (votes) => ([
+    primaryKey({columns: [votes.userId, votes.nodeId]}),
+    unique().on(votes.isStance, votes.nodeId, votes.userId)
   ])
 );
 
-export const members = pgTable(
-  'Members',
-  {
+export const voteRelations = relations(votes, ({ one }) => ({
+  node: one(nodes, {
+    fields: [votes.nodeId],
+    references: [nodes.id],
+  }),
+}));
+
+export const members = pgTable('Members', {
     userId: varchar('user_id', {length: 64})
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' })
       .primaryKey(),
-    adminRank: integer('admin_rank').notNull().default(0),
+    permissionRank: integer('permission_rank').notNull().default(1),
   }
 );
 

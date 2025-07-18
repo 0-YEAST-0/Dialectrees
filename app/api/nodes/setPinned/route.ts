@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { setPinned } from '@/db/nodes';
-import { getUserRequirePermissions, Permissions } from '@/app/permissions';
+import { getUserRequirePermissions } from '@/app/permissions';
 import { updateTreeUUID } from '@/db/globals';
-
+import { Permissions } from '@/app/client-permissions';
 
 export async function POST(request: NextRequest) {
     try {
